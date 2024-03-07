@@ -24,7 +24,11 @@ Here is a screen shot showing a single LPAR being graphed with the "-l" flag.
 <img src=images/npivgraph3.png>
 
 # Installation / Use
-Download the perl script from:  https://sourceforge.net/projects/npivgraph/files/ or https://github.com/nickjeffrey/npivgraph
+Download the perl script from:  https://sourceforge.net/projects/npivgraph/files/
+or 
+```
+git clone https://github.com/nickjeffrey/npivgraph
+```
 
 You must run the script from a server that has SSH keys setup with your HMC.  
 
