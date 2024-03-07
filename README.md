@@ -62,7 +62,7 @@ The script produces DOT code that Graphviz can turn in to a graph.  You will nee
 You have the following options on where to install Graphviz:
 Windows - Download from http://www.graphviz.org/    After installing on Windows, run the npivgraph.pl script from whereever, and redirect the output to a file.   Transfer this file to your Windows computer and graph it with Graphviz.
 
-Linux - It is in most distro's repositors and very easily installable.  After installing on Linux, run the npivgraph.pl script from whereever, and redirect the output to a file.   Transfer this file to your Linux computer and graph it with Graphviz.
+Linux - It is in most distro's repositors and very easily installable.  After installing on Linux, run the npivgraph.pl script from whereever, and redirect the output to a file.   Transfer this file to your Linux computer and graph it with Graphviz.  Install with: ```yum install graphviz```
 
 AIX -  It is also possible to install Graphviz on AIX, but more difficult.  See http://www.perzl.org/aix/ for AIX binaries of Graphviz.
 
