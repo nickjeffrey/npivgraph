@@ -77,10 +77,6 @@ http://pslot.sourceforge.net/
 
 http://graphlvm.sourceforge.net/
 
-# About the author / Contacting the author
-Script was written by Brian Smith.  I have an IBM developerWorks blog at:  Brian's AIX/UNIX/Linux blog
-
-You can contact me at:   ixbrian at gmail dot com
 
 # License / Disclaimer
 This program is free software: you can redistribute it and/or modify
