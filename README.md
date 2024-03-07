@@ -28,6 +28,8 @@ Download the perl script from:  https://sourceforge.net/projects/npivgraph/files
 or 
 ```
 git clone https://github.com/nickjeffrey/npivgraph
+cd npivgraph
+chmod +x npivgraph.pl
 ```
 
 You must run the script from a server that has SSH keys setup with your HMC.  
