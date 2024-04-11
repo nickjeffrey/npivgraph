@@ -6,7 +6,9 @@
 # CHANGE LOG
 # ---------
 # 2012-10-12 bsmith 	Script created version 0.2 Alpha 
-# 2024-04-12 njeffrey 	significant refactoring, add error checks
+# 2024-04-10 njeffrey 	significant refactoring, add error checks
+# 2024-04-11 njeffrey 	add error check to ping HMC prior to attempting SSH login
+# 2024-04-11 njeffrey 	add error check to validate managed system name on HMC
 
 
 # LICENSE
@@ -31,7 +33,7 @@ use strict;   					#enforce good coding practices
 use Getopt::Long;                                               #allow --long-switches to be used as parameters
 
 
-my (%dup,@out,@lparlist,$lparline,$line,$lpar,$fcs,$vio,$system,$hmc,%lparadp,%adpclt,$adpctlkey,%lparspf);
+my (%dup,@out,@lparlist,$lparline,$line,$lpar,$fcs,$vio,$hmc,%lparadp,%adpclt,$adpctlkey,%lparspf);
 my ($key,$verbose,$cmd,$vioserver_count,$aixlinux_count,$i5os_count,$vioserver,@vioservers);
 my ($managed_system,$output_file,$graphviz_dot);
 my ($opt_v,$opt_V,$opt_h,$opt_H,$opt_f,$opt,$opt_m,$opt_l);
@@ -65,15 +67,17 @@ sub show_usage {
   print " [-f vioserver]  only graph adapters on specified vio (i.e. - \"-v vio1\")\n\n";
   print "Examples:\n";
   print "Graph all:\n";
-  print "   $0 -h hscroot\@hmcserver1 -m p520\n";
+  print "   $0 -h hscroot\@hmc1 -m p520\n";
   print "Graph only fcs0 VIO adapter(s):\n";
-  print "   $0 -h hscroot\@hmcserver1 -m p520 -f fcs0\n";
+  print "   $0 -h hscroot\@hmc1 -m p520 -f fcs0\n";
   print "Graph only aixtest01 LPAR:\n";
-  print "   $0 -h hscroot\@hmcserver1 -m p520 -l aixtest01\n";
+  print "   $0 -h hscroot\@hmc1 -m p520 -l aixtest01\n";
   print "Graph only things connected to vio2:\n";
-  print "   $0 -h hscroot\@hmcserver1 -m p520 -v vio2\n";
+  print "   $0 -h hscroot\@hmc1 -m p520 -v vio2\n";
   print "Graph only things connected to vio2 on fcs0:\n";
-  print "   $0 -h hscroot\@hmcserver1 -m p520 -f fcs0 -v vio2\n\n";
+  print "   $0 -h hscroot\@hmc1 -m p520 -f fcs0 -v vio2\n\n";
+  print "Get a list of the managed servers connected to the HMC:\n";
+  print "   $0 -h hscroot\@hmc1 \n";
   print "Get help:\n";
   print "   $0 -H | --help \n";
   print "Add verbosity:\n";
@@ -83,15 +87,6 @@ sub show_usage {
 
 
 
-#sub get_options {
-#   getopts ("v:l:f:h:m:", \%opts );
-#   $hmc = $opts{h};
-#   $system = $opts{m};
-#   $lpar = $opts{l};
-#   $fcs = $opts{f};
-#   $vio = $opts{v};
-#}
- 
 
 sub get_options {
    #
@@ -128,7 +123,7 @@ sub get_options {
    #
    if( defined( $opt_h ) ) {
       $hmc = $opt_h;
-      print "   setting HMC paramter to $hmc \n" if ($verbose eq "yes");
+      print "   setting HMC parameter to $hmc \n" if ($verbose eq "yes");
    }
    #
    # If the user provided -v or --vio parameter, set value of $vio
@@ -138,11 +133,11 @@ sub get_options {
       print "   setting VIO server to $vio \n" if ($verbose eq "yes");
    }
    #
-   # If the user provided -m or --managedserver parameter, set value of $system
+   # If the user provided -m or --managedsystem parameter, set value of $managed_system
    #
    if( defined( $opt_m ) ) {
-      $system = $opt_m;
-      print "   setting managed system to $system \n" if ($verbose eq "yes");
+      $managed_system = $opt_m;
+      print "   setting managed system to $managed_system \n" if ($verbose eq "yes");
    }
    #
    # If the user provided -l or --lpar parameter, set value of $lpar
@@ -160,8 +155,8 @@ sub sanity_checks {
    #
    print "running subroutine sanity_checks \n" if ($verbose eq "yes");
    #
-   # confirm user entered parameters on command line
-   if ( ($hmc eq "") || ($system eq "") ){ show_usage();}
+   # confirm user entered the -h or --hmc parameter on command line
+   if ($hmc eq "") { show_usage();}
    #
    #
    # Delete the output file if it already exists
@@ -176,11 +171,155 @@ sub sanity_checks {
 
 
 
+sub ping_hmc {
+   #
+   print "running ping_hmc subroutine \n" if ($verbose eq "yes");
+   #
+   # This subroutine is used to verify that a valid HMC hostname/IP was provided as a command line parameter
+   #
+   # The command line parameter is in the format
+   #        -h username@hmc
+   #        -h hmc           <---assumes current username on UNIX box will be used
+   # So we may or may not need to remove username@ to get the HMC hostname/IP
+   #
+   my $hmc_ipaddr = "";   							#initialize variabble
+   my $ping_status = "";
+   if ( $hmc =~ /([a-zA-Z0-9_\.\-]+)\@([a-zA-Z0-9_\.]+)/ ) {              	#look for regex that matches username@hmc
+      print "   HMC was provided as $hmc , will attempt to ping $2 \n" if ($verbose eq "yes");
+      $hmc_ipaddr = $2;
+   } else {
+      print "   HMC was provided as $hmc , will attempt to ping $hmc \n" if ($verbose eq "yes");
+      $hmc_ipaddr = $hmc;
+   }
+   #
+   # ping remote hostname
+   #
+   $ping_status = "";                                                           #initialize variable
+   if( ! open( PING, "ping -c 1 $hmc_ipaddr 2>&1|" ) ) {
+      print "ERROR: Could not ping remote host $hmc_ipaddr  $! \n";
+      exit 1;
+   }
+   while (<PING>) {                                                             #read a line from STDIN
+      $ping_status = "failed" if ( /Name or service not known/ );             	#provided an invalid hostname on Linux
+      $ping_status = "failed" if ( /NOT FOUND/ );                        	#provided an invalid hostname on AIX
+      $ping_status = "failed" if ( /100% packet loss/ );                        #look for timeout message for UNIX ping
+      $ping_status = "failed" if ( /100% loss/ );                               #look for timeout message for Windows ping
+   }                                                                            #end of while loop
+   close PING;                                                                  #close filehandle
+   if ( $ping_status eq "failed" ) {                                            #check for flag value
+      print "ERROR: no ping reply from remote host $hmc_ipaddr  \n";
+      exit 1;
+   }                                                                            #end of if block
+}
+
+
+
+sub ssh_to_hmc {
+   #
+   print "running ssh_to_hmc subroutine \n" if ($verbose eq "yes");
+   #
+   # This subroutine is used to verify that we can successfully login to the HMC.
+   #
+   $cmd = "ssh $hmc lshmc -v";                 #define command to be run
+   print "   running $cmd \n" if ($verbose eq "yes");
+   open(SSH,"$cmd |") or die "$!\n";
+   while (<SSH>) {
+      if (/Hardware Management Console/) {
+         print "   confirmed successful SSH login to $hmc \n" if ($verbose eq "yes");
+      }
+      unless ( /[a-zA-Z0-9\"\*]+/ ) {                           #look for some output to confirm the SSH login worked
+         print "ERROR: Could not make an SSH connection to $hmc  -  please confirm remote hostname/IP is correct and you are using the correct login credentials. \n";
+         exit 1;
+      }                                                         #end of if block
+   }                                                            #end of while loop
+   close SSH;                                                   #close filehandle
+}                                                               #end of subroutine
+
+
+
+sub detect_managed_system {
+   #
+   print "running detect_managed_system subroutine \n" if ($verbose eq "yes");
+   #
+   # This subroutine will only run if the user did not specific the $managed_system as a command line parameter
+   #
+   unless (defined($managed_system)) {
+      print "ERROR: managed system was not provided as a command line parameter.  Please use this syntax: \n";
+      print "       $0 -h hscroot\@hmc1 -m name_of_managed_system \n";
+      print " \n";
+      print "HINT: these are the managed systems currently connected to the HMC: \n";
+      $cmd = "ssh $hmc lssysconn -r all -F type_model_serial_num,state";        	#define command to be run
+      open(SSH,"$cmd |") or die "$!\n";
+      while (<SSH>) {
+         print $_;
+      }
+      close SSH;						#close filehandle
+      exit 1; 							#exit script
+   }								#end of unless block
+}                                                               #end of subroutine
+
+
+
+sub verify_managed_system {
+   #
+   print "running verify_managed_system subroutine \n" if ($verbose eq "yes");
+   #
+   # This subroutine is used to verify that the user specified a valid managed system as a command line parameter
+   #
+   # Sample command output on HMC
+   # hscroot@hmc1:~> lssysconn -r all
+   # resource_type=sys,type_model_serial_num=9009-22A*7803XXX,sp=primary,sp_phys_loc=U78D3.001.WZS00BP-P1-C1,ipaddr=192.168.139.57,alt_ipaddr=unavailable,state=Connected
+   # resource_type=sys,type_model_serial_num=9009-22A*7803YYY,sp=primary,sp_phys_loc=U78D3.001.WZS00D9-P1-C1,ipaddr=192.168.240.5,alt_ipaddr=unavailable,state=Connected
+   #
+   # Use the following command syntax to make the output easier to parse
+   # hscroot@hmc1:~> lssysconn -r all -F type_model_serial_num,state
+   # 9009-22A*7803XXX,Connected
+   # 9009-22A*7803YYY,Connected
+   # 9009-22A*7803ZZZ,No Connection            <--- this would indicate that the managed system previously existed, but is not currently connected to the HMC
+   # 9009-22A*7803AAA,Failed Authentication    <--- this would indicate a bad authentication to the FSP on the managed system
+   #
+   #
+   # Programming note:  Since the managed system will often contain the * character, this will confuse regex, because * is a wildcard in regular expresssions.
+   # We work around this by using \Q (start quoting metacharacters) and \E (end quoting metacharacters) in the regex.
+   #
+   my $managed_system_isvalid = "unknown"; 					#initialize variable
+   $cmd = "ssh $hmc lssysconn -r all -F type_model_serial_num,state";        	#define command to be run
+   print "   running $cmd \n" if ($verbose eq "yes");
+   print "   to confirm that $managed_system is being managed by this HMC \n" if ($verbose eq "yes");
+   open(SSH,"$cmd |") or die "$!\n";
+   while (<SSH>) {
+      if ( /\Q$managed_system\E,Connected/ ) {                       		#use \Q and \E to quote the * metacharacter that is commonly used in managed system names
+         print "   confirmed that $managed_system is a valid system managed by this HMC \n" if ($verbose eq "yes");
+         $managed_system_isvalid = "yes"; 					#update variable 
+      }                                                 		        #end of if block
+      if ( /\Q$managed_system\E,No Connection/ ) {                  		#use \Q and \E to quote the * metacharacter that is commonly used in managed system names
+         print "ERROR: the HMC is not currently connected to the FSP on managed system $managed_system -  Please login to the HMC and validate the managed systems with this command: lssysconn -r all";
+         exit 1;
+      }                                                         		#end of if block
+      if ( /\Q$managed_system\E,Failed Authentication/ ) {                  	#use \Q and \E to quote the * metacharacter that is commonly used in managed system names
+         print "ERROR: the authentication password between the HMC and the FSP on managed system $managed_system has a problem, please login to the HMC and validate the managed systems with this command: lssysconn -r all";
+         exit 1;
+      }                                                         		#end of if block
+   }                                                          			#end of while loop
+   close SSH;                                                   		#close filehandle
+   #
+   unless ($managed_system_isvalid eq "yes") {
+      print "ERROR: Could not confirm that $managed_system is a valid system being managed by this HMC.  \n";
+      print "       You can validate the managed systems connected to the HMC by running this command on the HMC: lssysconn -r all \n";
+      print "       These are the managed systems currently detected on the HMC: \n";
+      @_ = `$cmd`;
+      print @_; 
+      exit 1;
+   }
+}                                                               #end of subroutine
+
+
+
 sub get_lpar_names {
    #
    print "running subroutine get_lpar_names \n" if ($verbose eq "yes");
    #
-   $cmd = "ssh -q $hmc 'lssyscfg -m $system -r lpar -F \"name,lpar_env,state\" | sort'";
+   $cmd = "ssh -q $hmc 'lssyscfg -m $managed_system -r lpar -F \"name,lpar_env,state\" | sort'";
    print "   running command: $cmd \n" if ($verbose eq "yes");
    @lparlist = `$cmd`;
    if ($#lparlist == -1) {
@@ -247,9 +386,9 @@ sub get_details {
    print "running subroutine get_details \n" if ($verbose eq "yes");
    #
    foreach $vioserver (@vioservers){
-      $cmd = "ssh -q $hmc \"viosvrcmd -m $system -p $vioserver -c 'lsmap -all -npiv -field name physloc clntname fc fcphysloc vfcclient vfcclientdrc -fmt ,'\"";
+      $cmd = "ssh -q $hmc \"viosvrcmd -m $managed_system -p $vioserver -c 'lsmap -all -npiv -field name physloc clntname fc fcphysloc vfcclient vfcclientdrc -fmt ,'\"";
       print "   running command: $cmd \n" if ($verbose eq "yes");
-      #@out = `ssh -q $hmc "viosvrcmd -m $system -p $viosserver -c 'lsmap -all -npiv -field name physloc clntname fc fcphysloc vfcclient vfcclientdrc -fmt ,'"`;
+      #@out = `ssh -q $hmc "viosvrcmd -m $managed_system -p $viosserver -c 'lsmap -all -npiv -field name physloc clntname fc fcphysloc vfcclient vfcclientdrc -fmt ,'"`;
       @out = `$cmd`;
       foreach $line (@out){
          if ($line =~ /(\S+),.*-C(\d+),([^,]*),(\S+),(\S+),(\S+),.*-C(\d+)/){
@@ -348,6 +487,10 @@ sub create_image_file {
 # -------------- main body of script ---------------------
 get_options;
 sanity_checks;
+ping_hmc;
+ssh_to_hmc;
+detect_managed_system;
+verify_managed_system;
 get_lpar_names;
 create_output_file;
 print_graphviz_header;
