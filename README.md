@@ -140,6 +140,12 @@ label="npivgraph by Brian Smith"
 }
 ```
 
+If you get the following error message, it means your managed system has no VIOS partitions (ie a full system partition running AIX or IBM i), and since there are no VIOS partitions, there will also be no virtual fibre channel or virtual SCSI connections.  In other words, this script has nothing to display for your managed system.
+```
+ERROR: did not detect any VIOS partitions.  Perhaps this is a full system partition host without VIOS.  No virtual FC or virtual SCSI due to no VIOS.
+Found 0 VIOS partitions, 1 AIX partitions, 0 iSeries partitions
+MyFullSystemPartition,aixlinux,Running
+```
 
 # Related scripts
 http://pslot.sourceforge.net/
