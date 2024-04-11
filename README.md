@@ -112,9 +112,9 @@ label="npivgraph by Brian Smith"
 }
 ```
 
-If the /usr/bin/dot file exists, the DOT-code at /tmp/npivgraph.txt will automatically be processed to generate a PNG image file.
+If the ```/usr/bin/dot``` file exists, the DOT-code at ```/tmp/npivgraph.txt``` will automatically be processed to generate a PNG image file at ```/tmp/npivgraph.png```
 
-If the /usr/bin/dot file does not exist, the user will be prompted to copy the text file at /tmp/npivgraph.txt to another machine with GraphViz installed so the PNG image file can be created.
+If the ```/usr/bin/dot``` file does not exist, the user will be prompted to copy the text file at ```/tmp/npivgraph.txt``` to another machine with GraphViz installed so the PNG image file can be created.
 
 
 # Related scripts
