@@ -2,13 +2,17 @@
 # npivgraph.pl
 #
 # Copyright 2012 Brian Smith 
-#
+# Copyright 2024 Nick Jeffrey
+
+
+
 # CHANGE LOG
 # ---------
 # 2012-10-12 bsmith 	Script created version 0.2 Alpha 
 # 2024-04-10 njeffrey 	significant refactoring, add error checks
 # 2024-04-11 njeffrey 	add error check to ping HMC prior to attempting SSH login
 # 2024-04-11 njeffrey 	add error check to validate managed system name on HMC
+
 
 
 # LICENSE
@@ -30,7 +34,7 @@
 
 
 use strict;   					#enforce good coding practices
-use Getopt::Long;                                               #allow --long-switches to be used as parameters
+use Getopt::Long;                               #allow --long-switches to be used as parameters
 
 
 my (%dup,@out,@lparlist,$lparline,$line,$lpar,$fcs,$vio,$hmc,%lparadp,%adpclt,$adpctlkey,%lparspf);
@@ -368,12 +372,13 @@ sub print_graphviz_header {
    #
    print "running subroutine print_graphviz_header \n" if ($verbose eq "yes");
    #
+   # print output to STDOUT
    print "graph npivgraph { \n";
    print "rankdir=LR\n";
    print "ranksep=.5\n";
+   print "nodesep=.4\n";
    #
    # print to $output_file
-   print OUT "nodesep=.4\n";
    print OUT "graph npivgraph { \n";
    print OUT "rankdir=LR\n";
    print OUT "ranksep=.5\n";
@@ -462,6 +467,28 @@ sub print_graphviz_footer {
 
 
 
+sub check_output_file {
+   #
+   print "running subroutine check_output_file \n" if ($verbose eq "yes");
+   #
+   my $line_count = 0;						#initialize counter variable
+   open(IN,"$output_file") or die "Cannot open output file $output_file $!\n";
+   while (<IN>) {
+      $line_count++; 						#count the total number of lines in the output file
+   }                                                            #end of while loop
+   close IN;                                                   #close filehandle
+   print "   the output file $output_file contains $line_count lines \n" if ($verbose eq "yes");
+   if ( $line_count < 10 ) {
+      print "WARNING: the output file $output_file containing the GraphViz DOT-code instructions \n";
+      print "         for generating image files is too small, containing only the header and  \n";
+      print "         footer details, but not actually any data from the managed system $managed_system.  \n\n";
+      print "         This is probably because you used a low-privileged userid to connect to the HMC, \n";
+      print "         which did not have sufficient privilege to run the viosvrcmd command on the HMC. \n";
+      print "         Please try again with a higher-priviledged userid on the HMC \n\n";
+      exit 1;
+   }
+}
+
 sub create_image_file {
    #
    print "running subroutine create_image_file \n" if ($verbose eq "yes");
@@ -496,5 +523,6 @@ create_output_file;
 print_graphviz_header;
 get_details;
 print_graphviz_footer;
+check_output_file;
 create_image_file;
 
