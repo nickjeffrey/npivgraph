@@ -24,7 +24,7 @@ Here is a screen shot showing a single LPAR being graphed with the "-l" flag.
 <img src=images/npivgraph3.png>
 
 # Installation / Use
-Download the perl script from:  https://sourceforge.net/projects/npivgraph/files/
+Download the perl script from this page to an AIX / VIOS / Linux box in your environment (basically any UNIX-like box with perl that has SSH access to the HMC).
 or 
 ```
 git clone https://github.com/nickjeffrey/npivgraph
@@ -32,7 +32,7 @@ cd npivgraph
 chmod +x npivgraph.pl
 ```
 
-You must run the script from a server that has SSH keys setup with your HMC.  
+It is preferable to run the script from a server that has SSH keys setup with your HMC.  If not, you will be prompted a few times for the SSH credentials.
 
 ```
 Usage ./npivgraph.pl -h hmcserver -m managedsystem [-l lpar] [-f fcs] [-v vioserver]
