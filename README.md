@@ -46,15 +46,19 @@ Usage ./npivgraph.pl -h hmcserver -m managedsystem [-l lpar] [-f fcs] [-v vioser
 # Examples:
 ```
 Graph all:
-   ./npivgraph.pl -h hscroot@hmcserver1 -m p520
+   ./npivgraph.pl -h hscroot@hmc1 -m p520
 Graph only fcs0 VIO adapter(s):
-   ./npivgraph.pl -h hscroot@hmcserver1 -m p520 -f fcs0
+   ./npivgraph.pl -h hscroot@hmc1 -m p520 -f fcs0
 Graph only aixtest01 LPAR:
-   ./npivgraph.pl -h hscroot@hmcserver1 -m p520 -l aixtest01
+   ./npivgraph.pl -h hscroot@hmc1 -m p520 -l aixtest01
 Graph only things connected to vio2:
-   ./npivgraph.pl -h hscroot@hmcserver1 -m p520 -v vio2
+   ./npivgraph.pl -h hscroot@hmc1 -m p520 -v vio2
 Graph only things connected to vio2 on fcs0:
-   ./npivgraph.pl -h hscroot@hmcserver1 -m p520 -f fcs0 -v vio2
+   ./npivgraph.pl -h hscroot@hmc1 -m p520 -f fcs0 -v vio2
+Show this help:
+   ./npivgraph.pl --help
+Show more verbosity for debugging:
+   ./npivgraph.pl -h hscroot@hmc1 -m p520 --verbose
 ```
 
 The script produces DOT code that Graphviz can turn in to a graph.  You will need to have Graphviz installed somewhere to produce the graph. 
