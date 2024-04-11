@@ -55,6 +55,8 @@ Graph only things connected to vio2:
    ./npivgraph.pl -h hscroot@hmc1 -m p520 -v vio2
 Graph only things connected to vio2 on fcs0:
    ./npivgraph.pl -h hscroot@hmc1 -m p520 -f fcs0 -v vio2
+Get a list of the managed servers connected to the HMC:
+   ./npivgraph.pl -h hscroot@hmc1
 Show this help:
    ./npivgraph.pl --help
 Show more verbosity for debugging:
