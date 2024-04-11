@@ -128,6 +128,19 @@ If the ```/usr/bin/dot``` file exists, the DOT-code at ```/tmp/npivgraph.txt``` 
 If the ```/usr/bin/dot``` file does not exist, the user will be prompted to copy the text file at ```/tmp/npivgraph.txt``` to another machine with GraphViz installed so the PNG image file can be created.
 
 
+# Troubleshooting
+If your output file ```/tmp/npivgraph.txt``` only contains the following 5 header and footer lines, you will not get a valid image file because all the data is missing.
+This is probably because you used HMC credentials that do not have sufficient privilege to run the ```viosvrcmd``` command on the HMC.  Please try again with a higher privileged userid.
+```
+graph npivgraph {
+rankdir=LR
+ranksep=.5
+labelloc="t"
+label="npivgraph by Brian Smith"
+}
+```
+
+
 # Related scripts
 http://pslot.sourceforge.net/
 
