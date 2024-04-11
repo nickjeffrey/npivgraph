@@ -77,6 +77,43 @@ If you have graphviz installed on a different computer from where you are runnin
 - execute the perl script, redirecting the output to a text file: ```./npivgraph.pl -h hscroot@hmc1 -m p520 > output.txt```
 - Copy the output.txt file to another machine that has graphviz installed, then convert the output.txt file to a PNG image: ```cat output.txt | dot -Tpng -o npiv.png```
 
+# Sample script output
+Running this perl script will generate a text file containing GraphViZ DOT-code at /tmp/npivgraph.txt, which will look similar to the following.
+This DOT-code will then be processed by GraphViz to create a PNG image file.
+```
+graph npivgraph {
+rankdir=LR
+ranksep=.5
+"aixserv01" -- "aixserv01.3"
+"aixserv01.3" -- "vio1.vfchost0"
+"vio1.vfchost0" -- "vio1.fcs1"
+"vio1.fcs1" -- "vio1"
+"vio1" [shape=box, label="vio1\nVIO", fillcolor="#87CEEB",style=filled,fontsize=9]
+"vio1.vfchost0" [shape=box, label="Virt. Fiber Srv Adp.\nVIO Slot 7\nvfchost0",fillcolor="#87CEEB",style=filled,fontsize=9]
+"aixserv01.3" [shape=box, label="Virt. Client Adp.\nClient Slot 3\nClient Device: fcs0",fillcolor="#90EE90",style=filled,fontsize=9]
+"aixserv01" -- "aixserv01.4"
+"aixserv01.4" -- "vio1.vfchost23"
+"vio1.vfchost23" -- "vio1.fcs0"
+"vio1.vfchost23" [shape=box, label="Virt. Fiber Srv Adp.\nVIO Slot 31\nvfchost23",fillcolor="#87CEEB",style=filled,fontsize=9]
+"aixserv01.4" [shape=box, label="Virt. Client Adp.\nClient Slot 4\nClient Device: fcs1",fillcolor="#90EE90",style=filled,fontsize=9]
+"aixserv01" -- "aixserv01.5"
+"aixserv01.5" -- "vio2.vfchost24"
+"vio2.vfchost24" -- "vio2.fcs0"
+"vio2.vfchost24" [shape=box, label="Virt. Fiber Srv Adp.\nVIO Slot 29\nvfchost24",fillcolor="#87CEEB",style=filled,fontsize=9]
+"aixserv01.5" [shape=box, label="Virt. Client Adp.\nClient Slot 5\nClient Device: fcs2",fillcolor="#90EE90",style=filled,fontsize=9]
+"aixserv01" -- "aixserv01.6"
+"aixserv01.6" -- "vio2.vfchost25"
+"aixserv01" [shape=box, label="aixserv01\n4 Adpapters\nLPAR", fillcolor="#87CEEB",style=filled,fontsize=9]
+"vio2.fcs0" [shape=box, label="VIO Physical HBA\nfcs0\nU78D3.001.WZS00D9-P1-C2-T1\n19 Virt. adapters",fillcolor="#90EE90",style=filled,fontsize=9]
+"vio2.fcs1" [shape=box, label="VIO Physical HBA\nfcs1\nU78D3.001.WZS00D9-P1-C2-T2\n19 Virt. adapters",fillcolor="#90EE90",style=filled,fontsize=9]
+"vio1.fcs0" [shape=box, label="VIO Physical HBA\nfcs0\nU78D3.001.WZS00D9-P1-C4-T1\n19 Virt. adapters",fillcolor="#90EE90",style=filled,fontsize=9]
+"vio1.fcs1" [shape=box, label="VIO Physical HBA\nfcs1\nU78D3.001.WZS00D9-P1-C4-T2\n18 Virt. adapters",fillcolor="#90EE90",style=filled,fontsize=9]
+labelloc="t"
+label="npivgraph by Brian Smith"
+}
+```
+
+
 # Related scripts
 http://pslot.sourceforge.net/
 
