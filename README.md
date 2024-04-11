@@ -1,7 +1,7 @@
 # npivgraph
 npivgraph for visualizing NPIV virtual fibre channel on IBM VIOS
 
-Forked from the original script by Brian Smith at https://npivgraph.sourceforge.net/
+Forked from the original script by Brian Smith at https://npivgraph.sourceforge.net/, performed signficant code refactoring and added error-checks.
 
 npivgraph for visualizing NPIV mappings in a PowerVM environment
 npivgraph is a Perl program designed to visualize the Virtual Fibre Channel (VFC) / NPIV adapter mappings in a PowerVM environment. 
