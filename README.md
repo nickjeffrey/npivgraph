@@ -78,8 +78,7 @@ If you have graphviz installed on a different computer from where you are runnin
 - Copy the output.txt file to another machine that has graphviz installed, then convert the output.txt file to a PNG image: ```cat output.txt | dot -Tpng -o npiv.png```
 
 # Sample script output
-Running this perl script will generate a text file containing GraphViZ DOT-code at /tmp/npivgraph.txt, which will look similar to the following.
-This DOT-code will then be processed by GraphViz to create a PNG image file.
+Running this perl script will generate a text file containing GraphViz DOT-code at /tmp/npivgraph.txt, which will look similar to the following.
 ```
 graph npivgraph {
 rankdir=LR
@@ -112,6 +111,10 @@ labelloc="t"
 label="npivgraph by Brian Smith"
 }
 ```
+
+If the /usr/bin/dot file exists, the DOT-code at /tmp/npivgraph.txt will automatically be processed to generate a PNG image file.
+
+If the /usr/bin/dot file does not exist, the user will be prompted to copy the text file at /tmp/npivgraph.txt to another machine with GraphViz installed so the PNG image file can be created.
 
 
 # Related scripts
