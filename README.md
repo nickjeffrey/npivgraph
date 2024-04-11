@@ -74,7 +74,9 @@ If you have Graphviz installed on the computer you are running the script from y
 
 If you have graphviz installed on a different computer from where you are running the npivgraph.pl script, use a procedure similar to this:
 - copy the npivgraph.pl script to some machine with perl (ie VIOS, AIX, Linux)
-- execute the perl script, redirecting the output to a text file: ```./npivgraph.pl -h hscroot@hmc1 -m p520 > output.txt```
+- execute the perl script, which will create a plaintext output file containing GraphViz DOT-code commands:
+  ```./npivgraph.pl -h hscroot@hmc1 -m p520
+   cat /tmp/npivgraph.txt```
 - Copy the output.txt file to another machine that has graphviz installed, then convert the output.txt file to a PNG image: ```cat output.txt | dot -Tpng -o npiv.png```
 
 # Sample script output
